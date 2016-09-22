@@ -13,10 +13,45 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\waifu">
+      <UniqueIdentifier>{306441df-0ff0-49d1-9b1e-d74d6161a99a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\waifu">
+      <UniqueIdentifier>{ac4d81a2-271a-4caa-b339-4bfcdcc6b0ec}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\source\Vulchan.cpp">
+    <ClCompile Include="..\..\source\vulchan.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\waifu\wfos.cpp">
+      <Filter>Source Files\waifu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\waifu\wfvulkan.cpp">
+      <Filter>Source Files\waifu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\waifu\wfassert.cpp">
+      <Filter>Source Files\waifu</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\source\vulchan.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\waifu\wfmacro.h">
+      <Filter>Header Files\waifu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\waifu\wfos.h">
+      <Filter>Header Files\waifu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\waifu\wfvulkan.h">
+      <Filter>Header Files\waifu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\waifu\wfvulkanfunctionlist.h">
+      <Filter>Header Files\waifu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\waifu\wfassert.h">
+      <Filter>Header Files\waifu</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,6 +1,12 @@
+#if defined(_DEBUG)
+#include <stdio.h>
+#include <stdlib.h>
+#endif
 #include <Windows.h>
+#include "waifu\wfassert.h"
 
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
+{
 	switch (uMsg) {
 	case WM_CLOSE: {
 		PostQuitMessage(0);
@@ -15,7 +21,16 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
-int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) 
+{
+#if defined(_DEBUG)
+	{
+		AllocConsole();
+		AttachConsole(GetCurrentProcessId());
+		FILE* fileTemp;
+		freopen_s(&fileTemp, "CONOUT$", "w", stdout);
+	}
+#endif
 
 	WNDCLASSEX windowClass = {};
 	windowClass.cbSize = sizeof(WNDCLASSEX);
@@ -35,7 +50,6 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		NULL,
 		hInstance,
 		NULL);
-
 	MSG msg;
 	bool done = false;
 	while (!done) {
@@ -47,9 +61,8 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
-
 		RedrawWindow(windowHandle, NULL, NULL, RDW_INTERNALPAINT);
 	}
 
-	return msg.wParam;
+	return (int)msg.wParam;
 }

@@ -69,10 +69,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>D:\Documents\Projects\Vulchan\3rdparty\vulkan\include;$(IncludePath)</IncludePath>
+    <IncludePath>D:\Documents\Projects\Vulchan\include;D:\Documents\Projects\Vulchan\3rdparty\vulkan\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>D:\Documents\Projects\Vulchan\3rdparty\vulkan\include;$(IncludePath)</IncludePath>
+    <IncludePath>D:\Documents\Projects\Vulchan\include;D:\Documents\Projects\Vulchan\3rdparty\vulkan\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -115,7 +115,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\source\Vulchan.cpp" />
+    <ClCompile Include="..\..\source\vulchan.cpp" />
+    <ClCompile Include="..\..\source\waifu\wfassert.cpp" />
+    <ClCompile Include="..\..\source\waifu\wfos.cpp" />
+    <ClCompile Include="..\..\source\waifu\wfvulkan.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\source\vulchan.h" />
+    <ClInclude Include="..\..\source\waifu\wfassert.h" />
+    <ClInclude Include="..\..\source\waifu\wfmacro.h" />
+    <ClInclude Include="..\..\source\waifu\wfos.h" />
+    <ClInclude Include="..\..\source\waifu\wfvulkan.h" />
+    <ClInclude Include="..\..\source\waifu\wfvulkanfunctionlist.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
