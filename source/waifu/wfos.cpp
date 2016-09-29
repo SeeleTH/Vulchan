@@ -1,6 +1,5 @@
 #include "wfos.h"
 
-#include <Windows.h>
 #include <Commdlg.h>
 
 

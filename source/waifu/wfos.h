@@ -1,11 +1,34 @@
 #pragma once
+#include "wfmacro.h"
 
 #include <string>
 #include <iostream>
 #include <fstream>
 
+#if defined(OS_WIN32)
+#include <Windows.h>
+#endif
+
+
 namespace wfOS
 {
+#if defined(OS_WIN32)
+	typedef HMODULE LibraryHandle;
+#endif
+
+
+	struct WindowContext
+	{
+#if defined(OS_WIN32)
+		HINSTANCE Instance;
+		HWND Handle;
+		WindowContext()
+			: Instance()
+			, Handle()
+		{}
+#endif
+	};
+
 	typedef std::ofstream ofstr;
 	typedef std::ifstream ifstr;
 

@@ -1,32 +1,36 @@
 #pragma once
 
+#ifndef OS_WIN32
+#define OS_WIN32
+#endif
+
 #if defined(_DEBUG)
-#define NEW  new//new(_NORMAL_BLOCK,__FILE__, __LINE__)
+#define WFNEW  new//new(_NORMAL_BLOCK,__FILE__, __LINE__)
 #else
-#define NEW  new
+#define WFNEW  new
 #endif
 
-#if !defined(DELETE)
-#define DELETE(x) if(x) delete x; x=NULL;
+#if !defined(WFDEL)
+#define WFDEL(x) if(x) delete x; x=NULL;
 #endif
 
-#if !defined(DELETE_SIZE)
-#define DELETE_SIZE(x,y) if(x) delete(x,y); x=NULL;
+#if !defined(WFDEL_SIZE)
+#define WFDEL_SIZE(x,y) if(x) delete(x,y); x=NULL;
 #endif
 
-#if !defined(DELETE_ARRAY)
-#define DELETE_ARRAY(x) if (x) delete [] x; x=NULL; 
+#if !defined(WFDEL_ARRAY)
+#define WFDEL_ARRAY(x) if (x) delete [] x; x=NULL; 
 #endif
 
-#if !defined(RELEASE)
-#define RELEASE(x) if(x) x->Release(); x=NULL;
+#if !defined(WFREL)
+#define WFREL(x) if(x) x->Release(); x=NULL;
 #endif
 
-#if !defined(DEBUG_COUT)
+#if !defined(WFDEB_COUNT)
 #if _DEBUG
-#define DEBUG_COUT(MSG) std::cout << "[" << __FILE__ <<":" << __LINE__ << "] " << MSG << std::endl;
+#define WFDEB_COUNT(MSG) std::cout << "[" << __FILE__ <<":" << __LINE__ << "] " << MSG << std::endl;
 #else
-#define DEBUG_COUT(MSG)
+#define WFDEB_COUNT(MSG)
 #endif
 #endif
 

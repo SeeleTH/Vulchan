@@ -4,16 +4,69 @@
 namespace wfVulkan
 {
 #define VK_EXPORTED_FUNCTION(fun) PFN_##fun fun = NULL;
+#define VK_GLOBAL_LEVEL_FUNCTION(fun) PFN_##fun fun = NULL;
+#define VK_INSTANCE_LEVEL_FUNCTION(fun) PFN_##fun fun = NULL;
+#define VK_DEVICE_LEVEL_FUNCTION(fun) PFN_##fun fun = NULL;
 #include "wfvulkanfunctionlist.h"
 
-	bool LoadVulkanLib()
+	VulkanBase::VulkanBase()
+		: m_vulkanLib(nullptr)
+		, m_winContext()
+		, m_vulkanContext()
 	{
-#if defined(VK_USE_PLATFORM_WIN32_KHR)
-		HMODULE vulkanLib = LoadLibrary("vulkan-1.dll");
-#elif defined(VK_USE_PLATFORM_XCB_KHR) || defined(VK_USE_PLATFORM_XLIB_KHR)
-		HMODULE vulkanLib = dlopen("libvulkan.so", RTLD_NOW);
+	}
+
+	VulkanBase::~VulkanBase()
+	{
+		if (m_vulkanLib)
+		{
+#if defined(OS_WIN32)
+			FreeLibrary(m_vulkanLib);
+#elif defined(OS_X11)
+			dlclose(m_vulkanLib);
 #endif
-		WFASSERT_MSG(vulkanLib != nullptr, Cannot load Vulkan Library);
+		}
+	}
+
+	bool VulkanBase::loadVulkanLibrary()
+	{
+		if (m_vulkanLib)
+			return true;
+#if defined(OS_WIN32)
+		m_vulkanLib = LoadLibrary("vulkan-1.dll");
+#elif defined(OS_X11)
+		m_vkLib = dlopen("libvulkan.so", RTLD_NOW);
+#endif
+		WFASSERT_MSG(m_vulkanLib != nullptr, Cannot load Vulkan Library);
+		return true;
+	}
+
+	bool VulkanBase::loadExportedEntryPoints()
+	{
+#if defined(OS_WIN32)
+#define LoadProcAddress GetProcAddress
+#elif defined(OS_X11)
+#define LoadProcAddress dlsym
+#endif
+#define VK_EXPORTED_FUNCTION( fun ) \
+if( !(fun = (PFN_##fun)LoadProcAddress( m_vulkanLib, #fun))) \
+{ \
+	WFASSERT_MSG(fun != nullptr, Cannot load exported entry point of #fun); \
+	return false; \
+}
+#include "wfvulkanfunctionlist.h"
+		return true;
+	}
+
+	bool VulkanBase::loadGlobalLevelEntryPoints()
+	{
+#define VK_GLOBAL_LEVEL_FUNCTION( fun ) \
+if( !(fun = (PFN_##fun)vkGetInstanceProcAddr( nullptr, #fun))) \
+{ \
+	WFASSERT_MSG(fun != nullptr, Cannot load global level entry point of #fun); \
+	return false; \
+}
+#include "wfvulkanfunctionlist.h"
 		return true;
 	}
 }
