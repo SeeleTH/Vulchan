@@ -26,11 +26,11 @@
 #define WFREL(x) if(x) x->Release(); x=NULL;
 #endif
 
-#if !defined(WFDEB_COUNT)
+#if !defined(WFDEB_COUT)
 #if _DEBUG
-#define WFDEB_COUNT(MSG) std::cout << "[" << __FILE__ <<":" << __LINE__ << "] " << MSG << std::endl;
+#define WFDEB_COUT(MSG) std::cout << "[" << __FILE__ <<":" << __LINE__ << "] " << std::endl << MSG << std::endl;
 #else
-#define WFDEB_COUNT(MSG)
+#define WFDEB_COUT(MSG)
 #endif
 #endif
 

@@ -4,6 +4,7 @@
 #endif
 #include <Windows.h>
 #include "waifu\wfassert.h"
+#include "waifu\wfvulkan.h"
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 {
@@ -50,6 +51,10 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		NULL,
 		hInstance,
 		NULL);
+
+	wfVulkan::VulkanBase vulkanBase;
+	vulkanBase.PrepareVulkan();
+
 	MSG msg;
 	bool done = false;
 	while (!done) {

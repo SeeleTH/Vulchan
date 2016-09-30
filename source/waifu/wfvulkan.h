@@ -34,11 +34,17 @@ namespace wfVulkan
 		VulkanBase();
 		~VulkanBase();
 
+		bool PrepareVulkan();
+
 	private:
 		bool loadVulkanLibrary();
 		bool loadExportedEntryPoints();
 		bool loadGlobalLevelEntryPoints();
+		bool createInstance();
 		bool loadInstanceLevelEntryPoints();
+		bool createDevice();
+		bool checkPhysicalDeviceProperties(VkPhysicalDevice physicalDevice
+			, uint32_t &graphicsQueueFamilyIndex);
 		bool loadDeviceLevelEntryPoints();
 
 		wfOS::LibraryHandle m_vulkanLib;
