@@ -40,8 +40,10 @@ namespace wfVulkan
 		}
 	}
 
-	bool VulkanBase::PrepareVulkan()
+	bool VulkanBase::PrepareVulkan(wfOS::WindowContext windowContext)
 	{
+		m_winContext = windowContext;
+
 		if (!loadVulkanLibrary())
 			return false;
 		if (!loadExportedEntryPoints())
@@ -51,6 +53,8 @@ namespace wfVulkan
 		if (!createInstance())
 			return false;
 		if (!loadInstanceLevelEntryPoints())
+			return false;
+		if (!createPresentationSurface())
 			return false;
 		if (!createDevice())
 			return false;
@@ -189,6 +193,54 @@ if( !(fun = (PFN_##fun)vkGetInstanceProcAddr( m_vulkanContext.Instance, #fun))) 
 		return true;
 	}
 
+	bool VulkanBase::createPresentationSurface()
+	{
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+		VkWin32SurfaceCreateInfoKHR surfaceCreateInfo = {
+			VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
+			nullptr,
+			0,
+			m_winContext.Instance,
+			m_winContext.Handle
+		};
+		if (vkCreateWin32SurfaceKHR(m_vulkanContext.Instance, &surfaceCreateInfo, nullptr,
+			&m_vulkanContext.PresentationSurface) != VK_SUCCESS)
+		{
+			WFDEB_COUT("Could not create presentation surface");
+			return false;
+		}
+#elif defined(VK_USE_PLATFORM_XCB_KHR)
+		VkXcbSurfaceCreateInfoKHR surfaceCreateInfo = {
+			VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
+			nullptr,
+			0,
+			m_winContext.Connection,
+			m_winContext.Handle
+	};
+		if (vkCreateXcbSurfaceKHR(m_vulkanContext.Connection, &surfaceCreateInfo, nullptr,
+			&m_vulkanContext.PresentationSurface) != VK_SUCCESS)
+		{
+			WFDEB_COUT("Could not create presentation surface");
+			return false;
+		}
+#elif defined(VK_USE_PLATFORM_XLIB_KHR)
+		VkXlibSurfaceCreateInfoKHR surfaceCreateInfo = {
+			VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
+			nullptr,
+			0,
+			m_winContext.DisplayPtr,
+			m_winContext.Handle
+		};
+		if (vkCreateXlibSurfaceKHR(m_vulkanContext.DisplayPtr, &surfaceCreateInfo, nullptr,
+			&m_vulkanContext.PresentationSurface) != VK_SUCCESS)
+		{
+			WFDEB_COUT("Could not create presentation surface");
+			return false;
+		}
+#endif
+		return true;
+	}
+
 	bool VulkanBase::createDevice()
 	{
 		uint32_t num_devices = 0;
@@ -206,10 +258,12 @@ if( !(fun = (PFN_##fun)vkGetInstanceProcAddr( m_vulkanContext.Instance, #fun))) 
 		}
 
 		VkPhysicalDevice selectedPhysicalDevice = VK_NULL_HANDLE;
-		uint32_t selectedQueueFamilyIndex = UINT32_MAX;
+		uint32_t selectedGraphicsQueueFamilyIndex = UINT32_MAX;
+		uint32_t selectedPresentQueueFamilyIndex = UINT32_MAX;
 		for (uint32_t i = 0; i < num_devices; i++)
 		{
-			if (checkPhysicalDeviceProperties(physicalDevices[i], selectedQueueFamilyIndex))
+			if (checkPhysicalDeviceProperties(physicalDevices[i]
+				, selectedGraphicsQueueFamilyIndex, selectedPresentQueueFamilyIndex))
 			{
 				selectedPhysicalDevice = physicalDevices[i];
 				WFDEB_COUT(i << " was selected");
@@ -228,7 +282,7 @@ if( !(fun = (PFN_##fun)vkGetInstanceProcAddr( m_vulkanContext.Instance, #fun))) 
 			VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
 			nullptr,
 			0,
-			selectedQueueFamilyIndex,
+			selectedGraphicsQueueFamilyIndex,
 			static_cast<uint32_t>(queuePriorities.size()),
 			&queuePriorities[0]
 		};
@@ -253,12 +307,13 @@ if( !(fun = (PFN_##fun)vkGetInstanceProcAddr( m_vulkanContext.Instance, #fun))) 
 			return false;
 		}
 
-		m_vulkanContext.GraphicsQueue.FamilyIndex = selectedQueueFamilyIndex;
+		m_vulkanContext.GraphicsQueue.FamilyIndex = selectedGraphicsQueueFamilyIndex;
 
 		return true;
 	}
 
-	bool VulkanBase::checkPhysicalDeviceProperties(VkPhysicalDevice physicalDevice, uint32_t & graphicsQueueFamilyIndex)
+	bool VulkanBase::checkPhysicalDeviceProperties(VkPhysicalDevice physicalDevice
+		, uint32_t & graphicsQueueFamilyIndex, uint32_t & presentQueueFamilyIndex)
 	{
 		VkPhysicalDeviceProperties deviceProperties;
 		VkPhysicalDeviceFeatures deviceFeatures;
@@ -285,22 +340,79 @@ if( !(fun = (PFN_##fun)vkGetInstanceProcAddr( m_vulkanContext.Instance, #fun))) 
 			return false;
 		}
 
+		uint32_t checkGraphicsQueueFamilyIndex = UINT32_MAX;
+		uint32_t checkPresentQueueFamilyIndex = UINT32_MAX;
 		std::vector<VkQueueFamilyProperties> queueFamilyProperties(queueFamilyCount);
+		std::vector<VkBool32> queuePresentSupport(queueFamilyCount);
 		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, &queueFamilyProperties[0]);
 		uint32_t checkQueueInd = 0;
 		for (checkQueueInd = 0; checkQueueInd < queueFamilyCount; checkQueueInd++)
 		{
-			if (queueFamilyProperties[checkQueueInd].queueCount > 0 &&
-				queueFamilyProperties[checkQueueInd].queueFlags & VK_QUEUE_GRAPHICS_BIT)
+			bool isSurfaceSupported = false;
+			vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, checkQueueInd
+				, m_vulkanContext.PresentationSurface, &queuePresentSupport[checkQueueInd]);
+			if (queueFamilyProperties[checkQueueInd].queueCount > 0)
 			{
-				graphicsQueueFamilyIndex = checkQueueInd;
-				break;
+				if (queueFamilyProperties[checkQueueInd].queueFlags & VK_QUEUE_GRAPHICS_BIT)
+				{
+					if (checkGraphicsQueueFamilyIndex == UINT32_MAX)
+					{
+						checkGraphicsQueueFamilyIndex = checkQueueInd;
+					}
+
+					if (queuePresentSupport[checkQueueInd])
+					{
+						checkGraphicsQueueFamilyIndex = checkQueueInd;
+						checkPresentQueueFamilyIndex = checkQueueInd;
+						break;
+					}
+				}
+				else if (queuePresentSupport[checkQueueInd] && checkPresentQueueFamilyIndex == UINT32_MAX)
+				{
+					checkPresentQueueFamilyIndex = checkQueueInd;
+				}
 			}
 		}
-		if (checkQueueInd >= queueFamilyCount)
+
+		if (checkGraphicsQueueFamilyIndex == UINT32_MAX || checkPresentQueueFamilyIndex == UINT32_MAX)
 		{
+			WFDEB_COUT("Cannot find queue families with required properties on device ("
+				<< deviceProperties.deviceName << ")");
 			return false;
 		}
+
+		uint32_t extensionCount = 0;
+		if ((vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr,
+			&extensionCount, nullptr) != VK_SUCCESS) ||
+			(extensionCount == 0))
+		{
+			WFDEB_COUT("Could not enumerate device (" << deviceProperties.deviceName << ") extension properties");
+			return false;
+		}
+
+		std::vector<VkExtensionProperties> availableExtension(extensionCount);
+		if (vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr,
+			&extensionCount, &availableExtension[0]) != VK_SUCCESS)
+		{
+			WFDEB_COUT("Could not enumerate device (" << deviceProperties.deviceName << ") extension properties");
+			return false;
+		}
+
+		std::vector<const char*> deviceExtensions = {
+			VK_KHR_SWAPCHAIN_EXTENSION_NAME
+		};
+
+		for (auto checkEx : deviceExtensions)
+		{
+			if (!checkExtensionAvailability(checkEx, availableExtension))
+			{
+				WFDEB_COUT("Could not find extension ("<< checkEx <<") in device (" << deviceProperties.deviceName << ")");
+				return false;
+			}
+		}
+
+		presentQueueFamilyIndex = checkPresentQueueFamilyIndex;
+		graphicsQueueFamilyIndex = checkGraphicsQueueFamilyIndex;
 
 		return true;
 	}

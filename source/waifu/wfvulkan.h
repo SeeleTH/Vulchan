@@ -38,12 +38,14 @@ namespace wfVulkan
 		VkDevice Device;
 		QueueContext GraphicsQueue;
 		QueueContext PresentQueue;
+		VkSurfaceKHR PresentationSurface;
 
 		VulkanContext()
 			: Instance(VK_NULL_HANDLE)
 			, Device(VK_NULL_HANDLE)
 			, GraphicsQueue()
 			, PresentQueue()
+			, PresentationSurface(VK_NULL_HANDLE)
 		{
 		}
 	};
@@ -54,7 +56,7 @@ namespace wfVulkan
 		VulkanBase();
 		~VulkanBase();
 
-		bool PrepareVulkan();
+		bool PrepareVulkan(wfOS::WindowContext windowContext);
 
 	private:
 		bool loadVulkanLibrary();
@@ -62,9 +64,10 @@ namespace wfVulkan
 		bool loadGlobalLevelEntryPoints();
 		bool createInstance();
 		bool loadInstanceLevelEntryPoints();
+		bool createPresentationSurface();
 		bool createDevice();
 		bool checkPhysicalDeviceProperties(VkPhysicalDevice physicalDevice
-			, uint32_t &graphicsQueueFamilyIndex);
+			, uint32_t &graphicsQueueFamilyIndex, uint32_t & presentQueueFamilyIndex);
 		bool loadDeviceLevelEntryPoints();
 		bool getDeviceQueues();
 

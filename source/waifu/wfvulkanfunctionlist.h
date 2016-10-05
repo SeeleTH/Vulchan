@@ -27,6 +27,7 @@ VK_INSTANCE_LEVEL_FUNCTION(vkGetPhysicalDeviceQueueFamilyProperties)
 VK_INSTANCE_LEVEL_FUNCTION(vkCreateDevice)
 VK_INSTANCE_LEVEL_FUNCTION(vkGetDeviceProcAddr)
 VK_INSTANCE_LEVEL_FUNCTION(vkDestroyInstance)
+VK_INSTANCE_LEVEL_FUNCTION(vkEnumerateDeviceExtensionProperties)
 
 #if defined(USE_SWAPCHAIN_EXTENSION)
 VK_INSTANCE_LEVEL_FUNCTION(vkDestroySurfaceKHR)

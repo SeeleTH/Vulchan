@@ -53,7 +53,10 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		NULL);
 
 	wfVulkan::VulkanBase vulkanBase;
-	vulkanBase.PrepareVulkan();
+	wfOS::WindowContext windowContext;
+	windowContext.Handle = windowHandle;
+	windowContext.Instance = hInstance;
+	vulkanBase.PrepareVulkan(windowContext);
 
 	MSG msg;
 	bool done = false;
